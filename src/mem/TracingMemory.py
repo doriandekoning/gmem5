@@ -1,6 +1,4 @@
-# -*- mode:python -*-
-
-# Copyright (c) 2012,2017 ARM Limited
+# Copyright (c) 2012-2013 ARM Limited
 # All rights reserved.
 #
 # The license below extends only to copyright in the software and shall
@@ -11,6 +9,9 @@
 # terms below provided that you ensure that this notice is replicated
 # unmodified and in its entirety in all distributions of the software,
 # modified or unmodified, in source code or in binary form.
+#
+# Copyright (c) 2005-2008 The Regents of The University of Michigan
+# All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -35,21 +36,20 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-# Authors: Andreas Hansson
+# Authors: Nathan Binkert
+#          Andreas Hansson
 
-Import('*')
+from m5.params import *
+from m5.objects.AbstractMemory import *
 
-# Only build if we have protobuf support
-if env['HAVE_PROTOBUF']:
-    ProtoBuf('inst_dep_record.proto')
-    ProtoBuf('packet.proto')
-    ProtoBuf('inst.proto')
-    ProtoBuf('mem.proto')
-    Source('protoio.cc')
-
-    # protoc relies on the fact that undefined preprocessor symbols are
-    # explanded to 0 but since we use -Wundef they end up generating
-    # warnings.
-    env.Append(CCFLAGS='-DPROTOBUF_INLINE_NOT_IN_HEADERS=0')
-else:
-    print("Unfortunately there is no PROTOBUF available")
+class TracingMemory(AbstractMemory):
+    type = 'TracingMemory'
+    cxx_header = "mem/tracing_mem.hh"
+    port = SlavePort("Slave ports")
+    latency = Param.Latency('30ns', "Request to response latency")
+    latency_var = Param.Latency('0ns', "Request to response latency variance")
+    # The memory bandwidth limit default is set to 12.8GB/s which is
+    # representative of a x64 DDR3-1600 channel.
+    bandwidth = Param.MemoryBandwidth('12.8GB/s',
+                                      "Combined read and write bandwidth")
+    output = Param.String('trace.pb', "Output of tracing")

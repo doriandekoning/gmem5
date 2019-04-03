@@ -125,13 +125,13 @@ def makeLinuxAlphaSystem(mem_mode, mdesc=None, ruby=False, cmdline=None):
     self.disk0 = CowIdeDisk(driveID='master')
     self.disk2 = CowIdeDisk(driveID='master')
     self.disk0.childImage(mdesc.disk())
-    self.disk2.childImage(disk('linux-bigswap2.img'))
+    self.disk2.childImage(disk('/home/dorian/thesis/thesis/qemu/disk.img'))
     self.simple_disk = SimpleDisk(disk=RawDiskImage(image_file = mdesc.disk(),
                                                read_only = True))
     self.intrctrl = IntrControl()
     self.mem_mode = mem_mode
     self.terminal = Terminal()
-    self.kernel = binary('vmlinux')
+    self.kernel = binary('x86_64-vmlinux-cpu-rng-nomouse-5.0.0')
     self.pal = binary('ts_osfpal')
     self.console = binary('console')
     if not cmdline:
@@ -279,7 +279,7 @@ def makeArmSystem(mem_mode, machine_type, num_cpus=1, mdesc=None,
               " the amount of DRAM you've selected. Please try" \
               " another platform")
 
-    self.have_security = security
+        self.have_security = security
 
     if bare_metal:
         # EOT character on UART will end the simulation
@@ -295,7 +295,7 @@ def makeArmSystem(mem_mode, machine_type, num_cpus=1, mdesc=None,
         if not cmdline:
             cmdline = 'earlyprintk=pl011,0x1c090000 console=ttyAMA0 ' + \
                       'lpj=19988480 norandmaps rw loglevel=8 ' + \
-                      'mem=%(mem)s root=%(rootdev)s'
+                      'mem=%(mem)s root=%(rootdev)s clocksource=acpi_pm'
 
         # When using external memory, gem5 writes the boot loader to nvmem
         # and then SST will read from it, but SST can only get to nvmem from
@@ -417,7 +417,7 @@ def makeLinuxMipsSystem(mem_mode, mdesc=None, cmdline=None):
     self.disk0 = CowIdeDisk(driveID='master')
     self.disk2 = CowIdeDisk(driveID='master')
     self.disk0.childImage(mdesc.disk())
-    self.disk2.childImage(disk('linux-bigswap2.img'))
+    self.disk2.childImage(disk('/home/dorian/thesis/thesis/qemu/disk.img'))
     self.malta = BaseMalta()
     self.malta.attachIO(self.iobus)
     self.malta.ide.pio = self.iobus.master
@@ -432,7 +432,8 @@ def makeLinuxMipsSystem(mem_mode, mdesc=None, cmdline=None):
     self.kernel = binary('mips/vmlinux')
     self.console = binary('mips/console')
     if not cmdline:
-        cmdline = 'root=/dev/hda1 console=ttyS0'
+        cmdline = 'earlyprintk=ttyS0 console=ttyS0 lpj=7999923\
+        root=/dev/hdb3 clocksource=acpi_pm loglevel=8'
     self.boot_osflags = fillInCmdline(mdesc, cmdline)
 
     self.system_port = self.membus.slave
@@ -539,7 +540,7 @@ def makeX86System(mem_mode, numCPUs=1, mdesc=None, self=None, Ruby=False):
     disk0 = CowIdeDisk(driveID='master')
     disk2 = CowIdeDisk(driveID='master')
     disk0.childImage(mdesc.disk())
-    disk2.childImage(disk('linux-bigswap2.img'))
+    disk2.childImage(disk('/home/dorian/thesis/thesis/qemu/disk.img'))
     self.pc.south_bridge.ide.disks = [disk0, disk2]
 
     # Add in a Bios information structure.
@@ -655,9 +656,10 @@ def makeLinuxX86System(mem_mode, numCPUs=1, mdesc=None, Ruby=False,
 
     # Command line
     if not cmdline:
-        cmdline = 'earlyprintk=ttyS0 console=ttyS0 lpj=7999923 root=/dev/hda1'
+        cmdline = 'earlyprintk=ttyS0 console=ttyS0 lpj=7999923 root=/dev/sda3\
+        clocksource=acpi_pm loglevel=8 random.trust_cpu=on'
     self.boot_osflags = fillInCmdline(mdesc, cmdline)
-    self.kernel = binary('x86_64-vmlinux-2.6.22.9')
+    self.kernel = binary('x86_64-vmlinux-cpu-rng-nomouse-5.0.0')
     return self
 
 
